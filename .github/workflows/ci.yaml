@@ -2,6 +2,7 @@ name: ci
 
 on:
   pull_request:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -37,6 +38,59 @@ jobs:
       matrix:
         # Test modern Odoo versions with latest Postgres version
         odoo_version: ["18.0"]
+<<<<<<< HEAD
+=======
+        pg_version: ["16"]
+        python_version: ["3.12"]
+        include:
+          # Older odoo versions don't support latest postgres and Python versions
+          - odoo_version: "17.0"
+            pg_version: "15"
+            python_version: "3.10"
+          - odoo_version: "16.0"
+            pg_version: "14"
+            python_version: "3.10"
+          - odoo_version: "15.0"
+            pg_version: "14"
+            python_version: "3.9"
+          - odoo_version: "14.0"
+            pg_version: "14"
+            python_version: "3.9"
+          - odoo_version: "13.0"
+            pg_version: "14"
+            python_version: "3.9"
+    env:
+      # Other variables to configure tests and execution environment
+      DOCKER_BUILDKIT: 1
+      PG_VERSIONS: ${{ matrix.pg_version }}
+      ODOO_MINOR: ${{ matrix.odoo_version }}
+      DOCKER_TAG: ${{ matrix.odoo_version }}
+    steps:
+      # Prepare
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_version }}
+      # Install dev and test dependencies
+      - run: pip install poetry
+      - name: Patch $PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      # override pyyaml to 5.3.1 as PIP_CONSTRAINT does not work for poetry
+      # to get rid of AttributeError: cython_sources when installing pyyaml
+      - run: poetry add pyyaml==5.3.1
+      - run: poetry install
+      # Test
+      - run: poetry run python -m unittest -v tests
+
+  build-push:
+    runs-on: ubuntu-22.04
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        # Test modern Odoo versions with latest Postgres version
+        odoo_version: ["18.0"]
+>>>>>>> d61c78e ([IMP] odoo 11, 13 with python3.7, odoo 18 with python 3.12)
         platforms: ["linux/amd64,linux/arm64"]
         include:
           # Older odoo versions don't support latest postgres and Python versions
@@ -51,9 +105,14 @@ jobs:
           - odoo_version: "13.0"
             platforms: "linux/amd64"
     env:
-      # Indicates what's the equivalent to tecnativa/doodba:latest image
+      # Indicates what's the equivalent to cormaza/doodba:latest image
       LATEST_RELEASE: "18.0"
+<<<<<<< HEAD
       DOCKER_REPO: tecnativa/doodba
+=======
+      # Define the docker hub repository location and github container registry host
+      DOCKER_REPO: cormaza/doodba
+>>>>>>> d61c78e ([IMP] odoo 11, 13 with python3.7, odoo 18 with python 3.12)
       GHCR_HOST: ghcr.io
     steps:
       - name: Clean Docker system before build
@@ -75,17 +134,25 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
+<<<<<<< HEAD
         if:
           github.repository == 'tecnativa/doodba' &&
           github.event.pull_request.head.repo.full_name == github.repository
+=======
+        if: github.repository == 'cormaza/doodba' && github.ref == 'refs/heads/master'
+>>>>>>> d61c78e ([IMP] odoo 11, 13 with python3.7, odoo 18 with python 3.12)
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_LOGIN }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Login to GitHub Container Registry
+<<<<<<< HEAD
         if:
           github.repository == 'tecnativa/doodba' &&
           github.event.pull_request.head.repo.full_name == github.repository
+=======
+        if: github.repository == 'cormaza/doodba' && github.ref == 'refs/heads/master'
+>>>>>>> d61c78e ([IMP] odoo 11, 13 with python3.7, odoo 18 with python 3.12)
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -287,7 +354,7 @@ jobs:
           file: ./${{ matrix.odoo_version }}.Dockerfile
           platforms: ${{ matrix.platforms }}
           push:
-            ${{ github.repository == 'tecnativa/doodba' && github.ref ==
+            ${{ github.repository == 'cormaza/doodba' && github.ref ==
             'refs/heads/master' }}
           tags: |
             ${{ env.DOCKER_REPO }}:${{ matrix.odoo_version }}
@@ -306,7 +373,7 @@ jobs:
           file: ./${{ matrix.odoo_version }}.Dockerfile
           platforms: ${{ matrix.platforms }}
           push:
-            ${{ github.repository == 'tecnativa/doodba' && github.ref ==
+            ${{ github.repository == 'cormaza/doodba' && github.ref ==
             'refs/heads/master' }}
           tags: |
             ${{ env.DOCKER_REPO }}:${{ matrix.odoo_version }}-onbuild

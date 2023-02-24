@@ -3,14 +3,16 @@ name = "doodba"
 version = "0.0.0"
 package-mode = false
 description = "Docker Odoo Base, a highly opinionated image ready to put Odoo inside it, but without Odoo"
-authors = ["Tecnativa"]
+authors = ["Tecnativa", "Christopher Ormaza"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
 
 [tool.poetry.group.dev.dependencies]
+docker-compose = "^1.27.4"
 plumbum = "^1.6.9"
 pre-commit = "^2.9.3"
+six = "^1.17.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
